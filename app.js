@@ -53,12 +53,12 @@ const tiles = [
   { number: 1, color: 'siyah' },
   { number: 1, color: 'mavi' },
   { number: 1, color: 'sarı' },
-  { number: 1, color: 'kırmızı' },
+  { number: 2, color: 'kırmızı' },
 
-  { number: 4, color: 'siyah' },
-  { number: 4, color: 'mavi' },
-  { number: 4, color: 'sarı' },
-  { number: 4, color: 'kırmızı' },
+  { number: 2, color: 'siyah' },
+  { number: 3, color: 'mavi' },
+  { number: 7, color: 'sarı' },
+  { number: 7, color: 'kırmızı' },
 
   { number: 6, color: 'siyah' },
   { number: 7, color: 'siyah' },
@@ -70,85 +70,60 @@ const tiles = [
   { number: 13, color: 'kırmızı' },
 
   { number: 10, color: 'mavi' },
-  { number: 11, color: 'mavi' },
   { number: 12, color: 'mavi' },
- 
+  { number: 12, color: 'mavi' },
+
 ];
 
+// Ardışık sayıları ve renkleri depolamak için boş diziler oluşturun
+const consecutiveNumberSequences = [];
+const sameNumberDifferentColors = [];
 
-function groupTilesByColor(tiles) {
-  const groupedTiles = {};
+let currentSequence = [];
+let previousTile = null;
 
-  for (const tile of tiles) {
-    const color = tile.color;
-
-    if (!groupedTiles[color]) {
-      groupedTiles[color] = [];
+// Tile'ları tarayarak işlem yapın
+tiles.forEach(tile => {
+  if (!previousTile) {
+    // İlk tile için başlangıç durumu
+    currentSequence.push(tile);
+    previousTile = tile;
+  } else if (
+    tile.number === previousTile.number &&
+    tile.color === previousTile.color
+  ) {
+    // Aynı tile devam ediyor
+    currentSequence.push(tile);
+    previousTile = tile;
+  } else if (
+    tile.number === previousTile.number + 1 &&
+    tile.color === previousTile.color
+  ) {
+    // Ardışık sayı devam ediyor
+    currentSequence.push(tile);
+    previousTile = tile;
+  } else {
+    // Ardışık dizisi bitti, işle ve sıfırla
+    if (currentSequence.length >= 3) {
+      consecutiveNumberSequences.push([...currentSequence]);
     }
-
-    groupedTiles[color].push(tile);
+    currentSequence = [];
+    previousTile = tile;
+    currentSequence.push(tile);
   }
 
-  return groupedTiles;
-}
-
-function findNonConsecutiveGroups(tiles) {
-  const nonConsecutiveGroups = [];
-
-  const sortedTiles = tiles.slice().sort((a, b) => a.number - b.number);
-
-  let currentGroup = [];
-  for (const tile of sortedTiles) {
-    if (currentGroup.length === 0) {
-      currentGroup.push(tile);
-    } else {
-      const prevTile = currentGroup[currentGroup.length - 1];
-      if (tile.number - prevTile.number > 1) {
-        if (currentGroup.length < 3) {
-          nonConsecutiveGroups.push(...currentGroup);
-        }
-        currentGroup = [];
-      }
-      currentGroup.push(tile);
-    }
+  // Farklı renkte aynı sayıları kontrol edin
+  const sameNumberTiles = tiles.filter(t => t.number === tile.number);
+  const uniqueColors = [...new Set(sameNumberTiles.map(t => t.color))];
+  if (uniqueColors.length >= 3 && !sameNumberDifferentColors.includes(tile.number)) {
+    sameNumberDifferentColors.push(tile.number);
   }
+});
 
-  if (currentGroup.length < 3) {
-    nonConsecutiveGroups.push(...currentGroup);
-  }
-
-  return nonConsecutiveGroups;
+// Son tile dizisini işle
+if (currentSequence.length >= 3) {
+  consecutiveNumberSequences.push([...currentSequence]);
 }
 
-const groupedTiles = groupTilesByColor(tiles);
-const nonConsecutiveTiles = {};
-
-for (const color in groupedTiles) {
-  nonConsecutiveTiles[color] = findNonConsecutiveGroups(groupedTiles[color]);
-}
-
-
-
-
-
-
-function sortFunc(tiles) {
-  return tiles.sort((a, b) => a.number - b.number);
-}
-
-function sortGroup(groupedTiles) {
-  const sortedGroupedTiles = {};
-
-  for (const color in groupedTiles) {
-    sortedGroupedTiles[color] = sortFunc(groupedTiles[color]);
-  }
-
-  return sortedGroupedTiles;
-}
-
-const sortedGroupedTiles = sortGroup(groupedTiles);
-
-
-console.log(nonConsecutiveTiles);
-console.log(sortedGroupedTiles);
-
+console.log("Ardışık Sayı Dizileri:", consecutiveNumberSequences);
+console.log("Farklı Renkte Aynı Sayılar:", sameNumberDifferentColors);
